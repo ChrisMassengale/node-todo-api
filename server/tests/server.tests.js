@@ -1,10 +1,14 @@
 const request = require('supertest');
 const expect = require('expect');
-
+const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
-const todos = [{text: "Todo1"},{text: "Todo2"},{text: "Todo3"},{text: "Todo4"},{text: "Todo5"}]
+const todos = [ {_id: new ObjectID(), text: "Todo1"},
+                {_id: new ObjectID(), text: "Todo2"},
+                {_id: new ObjectID(), text: "Todo3"},
+                {_id: new ObjectID(), text: "Todo4"},
+                {_id: new ObjectID(), text: "Todo5"}];
 beforeEach((done) => {
   Todo.remove({}).then(() => {        //Removes todos
       return Todo.insertMany(todos);  //Add five todos - otherwise the GET /todos doesn't work great.
@@ -64,4 +68,33 @@ describe('GET /todos', () => {
       })
       .end(done);
   });
+});
+
+describe('GET /todos/:id', () => {
+  it('should return todo doc', (done) => {
+    var myTodo = todos[0]._id.toHexString()
+    request(app)
+      .get(`/todos/${myTodo}`)
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.todo.text).toBe(todos[0].text);
+      })
+      .end(done);
+  });
+
+  it('should return a 404 if invalid ObjectID', (done) => {
+    request(app)
+      .get(`/todos/123`)
+      .expect(404)
+      .end(done);
+  });
+
+  it('should return a 404 if not found', (done) => {
+    var hexId = new ObjectID().toHexString(); //no record
+
+    request(app)
+      .get(`/todos/${hexId}`)
+      .expect(404)
+      .end(done);
+  });  
 });
