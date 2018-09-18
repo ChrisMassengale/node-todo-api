@@ -62,7 +62,7 @@ app.get('/todos/:id', (request, response) => {
 
 
 app.listen(port, () => {
-  console.log(`started on port ${port}`;
+  console.log(`started on port ${port}`);
 });
 
 module.exports = {app};
