@@ -73,12 +73,13 @@ app.delete('/todos/:id', (request, response) => {
       return response.status(404).send('404 Not found (Line 72)');
     }
 
-    response.status(200).send({deletedTodo});
-
+    response.status(200).send({todo: deletedTodo});
 
   }).catch( (err) => {
     response.status(400).send('400 Error line 71');
   });
+
+  
 });
 
 
