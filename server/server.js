@@ -60,6 +60,27 @@ app.get('/todos/:id', (request, response) => {
       //fail = 400 - send empty body back empty
 });
 
+//DELETE
+app.delete('/todos/:id', (request, response) => {
+  var id = request.params.id;
+
+  if (!ObjectID.isValid(id)) {
+    return response.status(404).send('404 Not found (line 67)');
+  }
+
+  Todo.findByIdAndDelete(id).then((deletedTodo) => {
+    if(!deletedTodo) {
+      return response.status(404).send('404 Not found (Line 72)');
+    }
+
+    response.status(200).send({deletedTodo});
+
+
+  }).catch( (err) => {
+    response.status(400).send('400 Error line 71');
+  });
+});
+
 
 app.listen(port, () => {
   console.log(`started on port ${port}`);
