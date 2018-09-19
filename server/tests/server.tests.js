@@ -6,7 +6,7 @@ const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 const todos = [ {_id: new ObjectID(), text: "Todo1"},
                 {_id: new ObjectID(), text: "Todo2"},
-                {_id: new ObjectID(), text: "Todo3"},
+                {_id: new ObjectID(), text: "Todo3", completed: true, completedAt: 333},
                 {_id: new ObjectID(), text: "Todo4"},
                 {_id: new ObjectID(), text: "Todo5"}];
 beforeEach((done) => {
@@ -74,7 +74,7 @@ describe('GET /todos', () => {
 
 describe('GET /todos/:id', () => {
   it('should return todo doc', (done) => {
-    var myTodo = todos[0]._id.toHexString()
+    var myTodo = todos[0]._id.toHexString();
     request(app)
       .get(`/todos/${myTodo}`)
       .expect(200)
@@ -137,4 +137,68 @@ describe('DELETE /todos/:id', () => {
       .expect(404)
       .end(done);
   });  
+});
+
+describe('PATCH /todos/:id', () => {
+  it('should update the todo', (done) => {
+
+    //Get an id from a todo
+    //know if starts as true, and swap to false or visa/versa
+    //confirm that the complete flag has changed, and if it goes to true, then confirm both that it is true && that completedAT is not null
+    // and visa versa if changed to false, then completed should be false, and completedAt should be null
+
+    let hexId = todos[1]._id.toHexString();
+    let updatedText = "Updated Text"
+
+    request(app)
+      .patch(`/todos/${hexId}`)
+      .send({
+        text: updatedText,
+        completed: true
+      })
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.todo.text).toBe(updatedText);
+        expect(response.body.todo.completed).toBe(true);
+        expect(response.body.todo.completedAt).toBeA('number');
+
+        let d = new Date()
+        let formattedDate = d.getFullYear().toString() + d.getMonth().toString() + d.getDate().toString();
+        
+        let cad = new Date(response.body.todo.completedAt);
+        
+        let formattedCompletedAtDate = cad.getFullYear().toString() + cad.getMonth().toString() + cad.getDate().toString();
+
+        expect(formattedCompletedAtDate).toBe(formattedDate);
+      })
+      .end(done)
+  });
+
+  it('should clear completedAt if the todo is not completed', (done) => {
+
+    //Get an id from a todo
+    //know if starts as true, and swap to false or visa/versa
+    //confirm that the complete flag has changed, and if it goes to true, then confirm both that it is true && that completedAT is not null
+    // and visa versa if changed to false, then completed should be false, and completedAt should be null
+
+    let hexId = todos[2]._id.toHexString();
+    let updatedText = "Updated Text"
+
+    request(app)
+      .patch(`/todos/${hexId}`)
+      .send({
+        text: updatedText,
+        completed: false
+      })
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.todo.text).toBe(updatedText);
+        expect(response.body.todo.completed).toBe(false);
+        expect(response.body.todo.completedAt).toBe(null);
+
+      })
+      .end(done)
+  });
+
+
 });
