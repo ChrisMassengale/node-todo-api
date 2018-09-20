@@ -13,6 +13,25 @@ var app = express();
 const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
+//create user
+app.post('/users', (request, response) =>{
+  var body = _.pick(request.body, ['email', 'password']);  //lodash pick property
+
+  //Create New User
+  var user = new User(body);
+
+  //Try to Save New User
+   //Success: 200 Return the New User info
+   //Failure: 400 Return the error Info
+  user.save().then((user) => {
+    response.send(user);
+  },
+  (error) => {
+    response.status(400).send(error)
+  });
+
+});
+
 
 //create todos
 app.post('/todos', (request, response) => {
