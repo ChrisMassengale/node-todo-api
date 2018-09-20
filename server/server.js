@@ -13,6 +13,7 @@ var app = express();
 const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
+
 //create user
 app.post('/users', (request, response) =>{
   var body = _.pick(request.body, ['email', 'password']);  //lodash pick property
@@ -25,7 +26,7 @@ app.post('/users', (request, response) =>{
       //response.send(user);
     })
     .then((token)=>{
-      console.log(`tokenB: ${token}`)
+      //console.log(`tokenB: ${token}`)
       response.header('x-auth', token).send(user);
     })
     .catch((error) => {
