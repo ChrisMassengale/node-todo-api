@@ -34,9 +34,27 @@ var userSchema = new Schema({
   }]
 });
 
+userSchema.statics.findByToken = function(token){
+  var User = this;  //statics use capital, as this is method for the 'Model' not a 
+  var decoded;
+
+  try {
+    decoded = jwt.verify(token, 'abc123') //secret (or salt currently hardcoded)
+  } catch(e) {
+      return Promise.reject();
+  }
+
+  return User.findOne({
+    _id: decoded._id,
+    'tokens.token': token,
+    'tokens.access': 'auth'
+  });
+}
+
 userSchema.methods.toJSON = function(){
   var user = this;
   var userObject = user.toObject();
+
   return _.pick(userObject, ['_id', 'email']);
 }
 
@@ -49,9 +67,11 @@ userSchema.methods.generateAuthToken = function(){
     access,
     token
   })
-  user.save().then(() => {
+
+  var tempToken = user.save().then(() => {
     return token;
   });
+  return tempToken;
 };
 
 module.exports = {userSchema};
