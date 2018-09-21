@@ -22,13 +22,14 @@ app.use(bodyParser.json());
 // });
 //
 
-
+//AUTENTICATE
 app.get('/users/me', authenticate, (request, response) => {
   response.send(request.user)
 });
 
 
-//create user
+//USERS
+//POST /USERS   #CREATE
 app.post('/users', (request, response) =>{
   var body = _.pick(request.body, ['email', 'password']);  //lodash pick property
 
@@ -48,7 +49,7 @@ app.post('/users', (request, response) =>{
     });
 });
 
-//GET /users  #INDEX
+//GET /USERS   #INDEX
 app.get('/users', (request, response) => {
   User.find()
     .then((users) => {
@@ -59,7 +60,7 @@ app.get('/users', (request, response) => {
     })
 });
 
-//DELETE /users  #DELETE
+//DELETE /USERS  #DELETE
 app.delete('/users/:id', (request, response) => {
   let id =  request.params.id;
 
@@ -80,7 +81,9 @@ app.delete('/users/:id', (request, response) => {
 
 });
 
-//create todos
+
+//TODOS
+//POST /TODOS   #CREATE
 app.post('/todos', (request, response) => {
   //console.log("TEXT:", request.body);
 
@@ -96,7 +99,7 @@ app.post('/todos', (request, response) => {
   });
 });
 
-//list todos
+//GET /TODOS    #INDEX
 app.get('/todos', (request, response) => {
   Todo.find().then((todos)=>{
     response.send({todos});
@@ -105,7 +108,7 @@ app.get('/todos', (request, response) => {
   })
 });
 
-//individual Todo -->  GET /todo/:id
+//GET /TODOS/:id   #SHOW
 app.get('/todos/:id', (request, response) => {
     var id = request.params.id;
 
@@ -129,7 +132,7 @@ app.get('/todos/:id', (request, response) => {
       //fail = 400 - send empty body back empty
 });
 
-//DELETE
+//DELETE /TODOS/:id   #DESTROY
 app.delete('/todos/:id', (request, response) => {
   var id = request.params.id;
 
@@ -149,7 +152,7 @@ app.delete('/todos/:id', (request, response) => {
   });
 });
 
-//PATCH
+//PATCH /TODOS/:id   #UPDATE
 app.patch('/todos/:id', (request, response) => {
 
   var id = request.params.id;
