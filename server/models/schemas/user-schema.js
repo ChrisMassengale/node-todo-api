@@ -55,6 +55,27 @@ userSchema.pre('save', function(next) {
   }
 });
 
+userSchema.statics.findByCredentials = function(email, password) {
+  var User = this;
+
+  return User.findOne({email})
+    .then((user) => {
+      if(!user) {
+        return Promise.reject();
+      }
+
+      return new Promise((resolve, reject) => {
+        bcrypt.compare(password, user.password, (error , result) => {
+          if (result) {
+            resolve(user);
+          } else {
+            reject();
+          }
+        })
+      });
+    }) //if not found, ask to login: If found, confirm password
+}
+
 userSchema.statics.findByToken = function(token){
   var User = this;  //statics use capital, as this is method for the 'Model' not a 
   var decoded;

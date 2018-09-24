@@ -19,6 +19,22 @@ app.use(bodyParser.json());
 app.get('/users/me', authenticate, (request, response) => {
   response.send(request.user)
 });
+//LOGIN IN
+//POST /users/login (email, password)
+app.post('/users/login', (request, response) => {
+  var body = _.pick(request.body, ['email', 'password']);
+  var email = body.email;
+  var password = body.password;
+
+  User.findByCredentials(email, password).then((user) => {
+      user.generateAuthToken().then((token) => {
+        response.header('x-auth', token).send(user);
+      })
+    }).catch((e) => {
+      response.status(400).send();
+    })
+
+});
 
 
 //USERS
@@ -38,6 +54,8 @@ app.post('/users', (request, response) =>{
       response.status(400).send(error);
     });
 });
+
+
 
 //GET /USERS   #INDEX
 app.get('/users', (request, response) => {
