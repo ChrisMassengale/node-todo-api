@@ -61,6 +61,7 @@ userSchema.statics.findByToken = function(token){
 
   try {
     decoded = jwt.verify(token, 'abc123') //secret (or salt currently hardcoded)
+    
   } catch(e) {
       return Promise.reject();
   }
@@ -70,6 +71,7 @@ userSchema.statics.findByToken = function(token){
     'tokens.token': token,
     'tokens.access': 'auth'
   });
+  
 }
 
 userSchema.methods.toJSON = function(){

@@ -15,13 +15,6 @@ const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-// app.get('users/me', (request, response) =>{
-//   var token =request.header('x-auth');
-
-//   User.findByToken(token);
-// });
-//
-
 //AUTENTICATE
 app.get('/users/me', authenticate, (request, response) => {
   response.send(request.user)
@@ -32,20 +25,17 @@ app.get('/users/me', authenticate, (request, response) => {
 //POST /USERS   #CREATE
 app.post('/users', (request, response) =>{
   var body = _.pick(request.body, ['email', 'password']);  //lodash pick property
-
   var user = new User(body);
-  
+
   user.save()
     .then(() => {
       return user.generateAuthToken();;
-      //response.send(user);
     })
     .then((token)=>{
-      //console.log(`tokenB: ${token}`)
       response.header('x-auth', token).send(user);
     })
     .catch((error) => {
-      response.status(400).send(error)
+      response.status(400).send(error);
     });
 });
 
@@ -85,7 +75,6 @@ app.delete('/users/:id', (request, response) => {
 //TODOS
 //POST /TODOS   #CREATE
 app.post('/todos', (request, response) => {
-  //console.log("TEXT:", request.body);
 
   var todo = new Todo({
     text: request.body.text,
@@ -169,7 +158,7 @@ app.patch('/todos/:id', (request, response) => {
     body.completedAt = null;
   }
 
-  Todo.findByIdAndUpdate(id, {
+  Todo.findOneAndUpdate({ _id: id}, {
     $set: body
   }, {new: true}).then( (todo) => {
     if (!todo) {
