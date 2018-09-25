@@ -76,6 +76,15 @@ userSchema.statics.findByCredentials = function(email, password) {
     }) //if not found, ask to login: If found, confirm password
 }
 
+userSchema.methods.removeToken = function(token){
+  var user = this;
+  return user.update({
+    $pull: {
+      tokens: {token}
+    }
+  });
+};
+
 userSchema.statics.findByToken = function(token){
   var User = this;  //statics use capital, as this is method for the 'Model' not a 
   var decoded;

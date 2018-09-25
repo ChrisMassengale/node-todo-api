@@ -36,7 +36,17 @@ app.post('/users/login', (request, response) => {
 
 });
 
+//LOG OUT (REMOVE TOKEN)
+//DELETE /users/me/token
 
+app.delete('/users/me/token', authenticate, (request, response) => {
+  request.user.removeToken(request.token)
+    .then(()=>{
+      response.status(200).send();
+    }, () => { 
+      response.status(400).send();
+    })
+});
 //USERS
 //POST /USERS   #CREATE
 app.post('/users', (request, response) =>{
