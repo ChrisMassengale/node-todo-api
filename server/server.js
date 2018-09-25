@@ -103,10 +103,10 @@ app.delete('/users/:id', (request, response) => {
 
 //TODOS
 //POST /TODOS   #CREATE
-app.post('/todos', (request, response) => {
-
+app.post('/todos', authenticate, (request, response) => {
   var todo = new Todo({
     text: request.body.text,
+    _creator: request.user._id
   });
 
   todo.save().then((document) => {
@@ -118,8 +118,10 @@ app.post('/todos', (request, response) => {
 });
 
 //GET /TODOS    #INDEX
-app.get('/todos', (request, response) => {
-  Todo.find().then((todos)=>{
+app.get('/todos', authenticate, (request, response) => {
+  Todo.find({
+    _creator: request.user._id
+  }).then((todos)=>{
     response.send({todos});
   },(e)=>{
     response.status(400).send(e);

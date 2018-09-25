@@ -15,6 +15,7 @@ describe('POST /todos', () => {
     var text = 'Most Recent Todo';
     request(app)
       .post('/todos')
+      .set('x-auth', users[0].tokens[0].token)
       .send({text})
       .expect(200)
       .expect((response) => {
@@ -37,6 +38,7 @@ describe('POST /todos', () => {
     
     request(app)
       .post('/todos')
+      .set('x-auth', users[0].tokens[0].token)
       .send({})
       .expect(400)
       .end ((error, response) => {
@@ -57,9 +59,10 @@ describe('GET /todos', () => {
   it('should get all todos', (done) => {
     request(app)
       .get('/todos')
+      .set('x-auth', users[0].tokens[0].token)
       .expect(200)
       .expect((response) => {
-        expect(response.body.todos.length).toBe(5);
+        expect(response.body.todos.length).toBe(3);
       })
       .end(done);
   });
