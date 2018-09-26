@@ -20,10 +20,14 @@ const users = [{
               },{
                 _id: userTwoID, 
                 email: 'jen@example.com',
-                password: 'userTwoPass'
+                password: 'userTwoPass',
+                tokens: [{
+                  access: 'auth',
+                  token: jwt.sign({_id: userTwoID, access: 'auth'}, 'abc123').toString()
+                }]
               }]
 
-const todos = [ {_id: new ObjectID(), text: "Todo1", _creator: userTwoID},
+const todos = [ {_id: new ObjectID(), text: "Todo1", _creator: userOneID},
                 {_id: new ObjectID(), text: "Todo2", _creator: userTwoID},
                 {_id: new ObjectID(), text: "Todo3", completed: true, completedAt: 333, _creator: userOneID},
                 {_id: new ObjectID(), text: "Todo4", _creator: userOneID},

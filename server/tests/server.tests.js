@@ -62,7 +62,7 @@ describe('GET /todos', () => {
       .set('x-auth', users[0].tokens[0].token)
       .expect(200)
       .expect((response) => {
-        expect(response.body.todos.length).toBe(3);
+        expect(response.body.todos.length).toBe(4);
       })
       .end(done);
   });
@@ -73,8 +73,10 @@ describe('GET /todos', () => {
 describe('GET /todos/:id', () => {
   it('should return todo doc', (done) => {
     var myTodo = todos[0]._id.toHexString();
+
     request(app)
       .get(`/todos/${myTodo}`)
+      .set('x-auth', users[0].tokens[0].token)
       .expect(200)
       .expect((response) => {
         expect(response.body.todo.text).toBe(todos[0].text);
@@ -85,6 +87,7 @@ describe('GET /todos/:id', () => {
   it('should return a 404 if invalid ObjectID', (done) => {
     request(app)
       .get(`/todos/123`)
+      .set('x-auth', users[0].tokens[0].token)
       .expect(404)
       .end(done);
   });
@@ -94,9 +97,20 @@ describe('GET /todos/:id', () => {
 
     request(app)
       .get(`/todos/${hexId}`)
+      .set('x-auth', users[0].tokens[0].token)
       .expect(404)
       .end(done);
   });  
+
+  it('should NOT return todo doc created by another user', (done) => {
+    var myTodo = todos[1]._id.toHexString(); //Select Todo assigned to second user
+  
+    request(app)
+      .get(`/todos/${myTodo}`)
+      .set('x-auth', users[0].tokens[0].token) //But use authentication Token of first User
+      .expect(404)
+      .end(done);
+  });
 });
 
 describe('DELETE /todos/:id', () => {
@@ -104,6 +118,7 @@ describe('DELETE /todos/:id', () => {
     var hexId = todos[1]._id.toHexString()
     request(app)
       .delete(`/todos/${hexId}`)
+      .set('x-auth', users[1].tokens[0].token)
       .expect(200)
       .expect((response) => {
         expect(response.body.todo._id).toBe(hexId);
@@ -120,9 +135,29 @@ describe('DELETE /todos/:id', () => {
       });
   });
 
+  it('should not delete doc that was not created by logged-in user', (done) => {
+    var hexId = todos[0]._id.toHexString()
+    
+    request(app)
+      .delete(`/todos/${hexId}`)
+      .set('x-auth', users[1].tokens[0].token)
+      .expect(404)
+      .end((error, response) => {
+        if (error) {
+          return done(error);
+        }
+
+        Todo.findById(hexId).then((todo) => {
+          expect(todo).toExist();   //Shouldnt be deleted
+          done();
+        }).catch((error) => {done(error)});
+      });
+  });
+
   it('should return a 404 if invalid ObjectID', (done) => {
     request(app)
       .delete(`/todos/123`)
+      .set('x-auth', users[1].tokens[0].token)
       .expect(404)
       .end(done);
   });
@@ -132,6 +167,7 @@ describe('DELETE /todos/:id', () => {
 
     request(app)
       .delete(`/todos/${hexId}`)
+      .set('x-auth', users[1].tokens[0].token)
       .expect(404)
       .end(done);
   });  
@@ -140,16 +176,12 @@ describe('DELETE /todos/:id', () => {
 describe('PATCH /todos/:id', () => {
   it('should update the todo', (done) => {
 
-    //Get an id from a todo
-    //know if starts as true, and swap to false or visa/versa
-    //confirm that the complete flag has changed, and if it goes to true, then confirm both that it is true && that completedAT is not null
-    // and visa versa if changed to false, then completed should be false, and completedAt should be null
-
-    let hexId = todos[1]._id.toHexString();
+    let hexId = todos[0]._id.toHexString();
     let updatedText = "Updated Text"
 
     request(app)
       .patch(`/todos/${hexId}`)
+      .set('x-auth', users[0].tokens[0].token)
       .send({
         text: updatedText,
         completed: true
@@ -172,18 +204,30 @@ describe('PATCH /todos/:id', () => {
       .end(done)
   });
 
-  it('should clear completedAt if the todo is not completed', (done) => {
+  it('should not update the todo created by another user', (done) => {
 
-    //Get an id from a todo
-    //know if starts as true, and swap to false or visa/versa
-    //confirm that the complete flag has changed, and if it goes to true, then confirm both that it is true && that completedAT is not null
-    // and visa versa if changed to false, then completed should be false, and completedAt should be null
+    let hexId = todos[1]._id.toHexString(); //Todo assigned to user 2
+    let updatedText = "Updated Text"
+
+    request(app)
+      .patch(`/todos/${hexId}`)
+      .set('x-auth', users[0].tokens[0].token)  //use token of user 1
+      .send({
+        text: updatedText,
+        completed: true
+      })
+      .expect(404)
+      .end(done)
+  });
+
+  it('should clear completedAt if the todo is not completed', (done) => {
 
     let hexId = todos[2]._id.toHexString();
     let updatedText = "Updated Text"
 
     request(app)
       .patch(`/todos/${hexId}`)
+      .set('x-auth', users[0].tokens[0].token)
       .send({
         text: updatedText,
         completed: false
@@ -282,7 +326,7 @@ describe('POST /USERS', () => {
   })
 });
 
-describe('POST /USERS', () => {
+describe('POST /USERS/LOGIN', () => {
  it ('Should login user and return auth token', (done) => {
     request(app)
       .post('/users/login')
@@ -300,7 +344,7 @@ describe('POST /USERS', () => {
         }
 
         User.findById(users[1]._id).then((user) => {
-          expect(user.tokens[0]).toInclude({
+          expect(user.tokens[1]).toInclude({
             access: 'auth',
             token: response.headers['x-auth']
           });
@@ -326,7 +370,7 @@ describe('POST /USERS', () => {
         }
 
         User.findById(users[1]._id).then((user) => {
-          expect(user.tokens.length).toBe(0);
+          expect(user.tokens.length).toBe(1);
           done();
         }).catch((error) => done(error));
       });
